@@ -9,5 +9,9 @@ defmodule Mix.Tasks.C.Hello do
   def run(_args) do
     IO.puts("I am saying hello")
     IO.inspect(File.cwd())
+
+    # IO.inspect(File.)
   end
+
+  
 end

@@ -1,62 +1,32 @@
 defmodule Mix.Tasks.C.Config.List do
-  @moduledoc """
-
-  """
+  @moduledoc false
 
   use Mix.Task
+  alias CustomTasks.Tree
 
-  @shortdoc ""
-  def run(_args) do
-    tree = get_config_tree()
-    |> IO.inspect()
+  @shortdoc "Show the given structure of the config storage"
+  def run(levels) do
+    tree = Tree.get_config_tree()
+    list(tree, levels)
 
-    get_leaf(tree, "a")
-    |> IO.inspect()
-
-    get_leaf(tree, "b")
-    |> IO.inspect()
-
-    get_leaf(tree, ["a", "sitey"])
+    Tree.get_leaf(tree, ["ancillary", "alcoa", "0.1.exs"])
     |> IO.inspect()
   end
 
-  def get_config_tree() do
-    "./config/**"
-    |> Path.wildcard()
-    |> Enum.map(&String.split(&1, "/"))
-    |> Enum.map(&remove_head/1)
-    |> Enum.reduce(%{}, fn leaves, tree ->
-      add_leaves(tree, leaves)
-    end)
+  defp list(nil, level) do
+    IO.puts("Cannot find a match for #{level}")
   end
 
-  def get_leaf(tree, leaf) when is_binary(leaf), do: get_leaf(tree, [leaf])
-  def get_leaf(tree, leaves) do
-    get_in(tree, leaves)
+  defp list(tree, []) do
+    Tree.print_tree(tree)
   end
 
-  defp remove_head([]), do: nil
-  defp remove_head([head | tail]), do: tail
- 
-  defp add_leaves(tree, [repo]) do
-    Map.put_new(tree, repo, %{})
+  defp list(tree, leaves) do
+    tree
+    |> Tree.get_leaf(leaves)
+    |> Tree.print_tree()
   end
 
-  defp add_leaves(tree, [repo, site]) do
-    tree = add_leaves(tree, [repo])
-    
-    case Map.get(tree, site, nil) do
-      nil -> put_in(tree, [repo, site], [])
-      _ -> tree
-    end
-  end
 
-  defp add_leaves(tree, [repo, site, version]) do
-    tree = add_leaves(tree, [repo, site])
 
-    case Map.get(tree, site, nil) do
-      nil -> put_in(tree, [repo, site], [version])
-      versions -> put_in(tree, [repo, site], [version | versions])
-    end
-  end
 end
