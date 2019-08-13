@@ -8,5 +8,6 @@ defmodule Mix.Tasks.C.Hello do
   @shortdoc "Says hello"
   def run(_args) do
     IO.puts("I am saying hello")
+    IO.inspect(File.cwd())
   end
 end
