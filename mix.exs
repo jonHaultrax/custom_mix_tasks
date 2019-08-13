@@ -1,12 +1,12 @@
-defmodule Manager.MixProject do
+defmodule CustomTasks.MixProject do
   use Mix.Project
   @version "0.1.0"
-  @default_archive "archive/man.ez"
-  @versioned_archive "archive/man-#{@version}.ez"
+  @archive "c"
+  @archive_dir "#{@archive}.ez"
 
   def project do
     [
-      app: :manager,
+      app: :custom_tasks,
       version: @version,
       elixir: "~> 1.9",
       description: "Helper functions for me",
@@ -17,15 +17,47 @@ defmodule Manager.MixProject do
 
   def aliases do
     [
-      "man.build": &build_release/1
+      "c.install": &install/1,
+      "c.uninstall": &uninstall/1
     ]
   end
 
-  defp build_release(_) do
+  defp compile() do
+    Mix.Tasks.Compile.run([])
+  end
+
+  defp install(_) do
     File.mkdir_p("archive")
 
-    Mix.Tasks.Compile.run([])
-    Mix.Tasks.Archive.Build.run(["--output=#{@default_archive}"])
-    Mix.Tasks.Archive.Build.run(["--output=#{@versioned_archive}"])
+    compile()
+    Mix.Tasks.Archive.Build.run(["--output=#{@archive_dir}"])
+
+    Mix.Tasks.Archive.Install.run([@archive_dir, "--force"])
+    |> case do
+      true -> IO.puts("Archive '#{@archive}' installed")
+      false -> IO.puts("Archive '#{@archive}' not installed")
+    end
+  end
+
+  defp uninstall(_) do
+    compile()
+
+    get_archives()
+    |> Enum.member?("c")
+    |> case do
+      true ->
+        Mix.Tasks.Archive.Uninstall.run([@archive, "--force"])
+        IO.puts("Archive '#{@archive}' uninstalled")
+
+      false ->
+        IO.puts("Archive '#{@archive}' not present")
+    end
+  end
+
+  defp get_archives() do
+    Mix.Local.path_for(:archive)
+    |> Path.join("*")
+    |> Path.wildcard()
+    |> Enum.map(&Path.basename/1)
   end
 end

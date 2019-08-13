@@ -1,4 +1,4 @@
-defmodule Mix.Tasks.Man.Hello do
+defmodule Mix.Tasks.C.Hello do
   @moduledoc """
   The module doc
   """
